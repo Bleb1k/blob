@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/blob/styles.css">
+    <script type="module" src="/blob/templates.js"></script>
+
+    <title>~/home</title>
+</head>
+<body>
+    <tmpl src="header.html"></tmpl>
+
+    <section>
+        <h1>/home/bleb1k</h1>
+        <p>Systems programmer & perpetual tinkerer</p>
+
+        <blockquote>
+            "Low-level programming is good for the programmer's soul."<br>
+            > John Carmack
+        </blockquote>
+
+        <h2>Current Projects</h2>
+        <div class="gallery">
+            <div class="project-card">
+                <!-- <img src="https://via.placeholder.com/400x300.png/89a6d1/000000?text=WASM+API" alt="WASM API"> -->
+                <div class="project-info">
+                    <a href="/blob/posts/wasm_api.html"><h3>WebAssembly API</h3></a>
+                    <p>JavaScript/WASM interoperability experiments</p>
+                </div>
+            </div>
+            
+            <div class="project-card">
+                <!-- <img src="https://via.placeholder.com/400x300.png/d189a6/000000?text=Parser+Dev" alt="Parser Development"> -->
+                <div class="project-info">
+                    <h3>Custom Language Parser</h3>
+                    <p>Hand-rolled recursive descent parser in C</p>
+                </div>
+            </div>
+        </div>
+
+        <h2>Recent Experiments</h2>
+        <div class="gallery">
+            <div class="project-card">
+                <!-- <img src="https://via.placeholder.com/400x300.png/89a6d1/000000?text=Rust+Quadtree" alt="Quadtree Visualization"> -->
+                <div class="project-info">
+                    <h3>Quadtree Implementation</h3>
+                    <p>Rust + macroquad for spatial partitioning</p>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <!-- <img src="https://via.placeholder.com/400x300.png/d189a6/000000?text=TypeScript+Fractal" alt="WebGL Fractal"> -->
+                <div class="project-info">
+                    <h3>WebGL Fractal Renderer</h3>
+                    <p>TypeScript/WebGL shader experiments</p>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <!-- <img src="https://via.placeholder.com/400x300.png/a6d189/000000?text=Zig+QR+Code" alt="QR Code Generator"> -->
+                <div class="project-info">
+                    <h3>QR Code Generator</h3>
+                    <p>Zig implementation with error correction</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <tmpl src="footer.html"></tmpl>
+</body>
+</html>

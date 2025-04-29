@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/blob/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <script type="module" src="/blob/templates.js"></script>
+
+    <title>~/home</title>
+    <meta name="description" content="Explore the creation of a JavaScript API for WebAssembly (WASM), designed to bring native performance to JS applications. Learn about the challenges, solutions, and future plans for this experimental project.">
+</head>
+<body>
+    <tmpl src="header.html"></tmpl>
+
+    <section>
+        <h1>~/posts/"WASM-JS API"</h1>
+        <small>2025-04-24</small>
+        <img alt="Some cool IT picture for a blog post about WebAssembly, maybe something saying (Native+Crossplatform=Wasm)">
+        <!-- "JS code that creates simple function and compiles it to wasm" -->
+        <h2>Native + Crossplatform = WASM</h2>
+        <p>You know what wasm is, yet you program in JavaScript, and can't utilize its power? Well, pay close attention, since that's exactly what this post is about!
+        </p>
+        <p>For the last few years, I’ve been hearing about WebAssembly. It sounded incredibly promising—assembly that runs across platforms and performs on par with native apps? Mind-blowing! But there was a catch: how do you actually use it without leaving the comfort of JavaScript? Here’s the story of how I built an API to bridge that gap.
+        </p>
+
+        <h2>Reasoning</h2>
+        <p>The last time I tried to learn about WebAssembly, I couldn't figure out why my JS function can't be compiled into wasm or how to create wasm modules in JS, but that was two years ago!
+        </p>
+        <p>Now, after knowing what wasm is and how it's used I decided to build my expectations into an API. I wanted a way to create wasm module directly in JavaScript, and I wanted it to feel less like "you write wasm", and more like a normal language.
+        </p>
+
+        <h2>First Steps</h2>
+        <p>At first I had no idea how to implement it, so I just opened wasm documentation and got to know what binary module consists of:
+        </p>
+        <img
+            alt="Web assembly module structure: section arrangement"
+            src="/blob/assets/web_assmebly_sections.png">
+        <a href="https://webassembly.github.io/spec/core/binary/modules.html#binary-module">Section arrangement of wasm binary.</a>
+        <p>And I played around with <a href="https://webassembly.github.io/wabt/demo/wat2wasm/">wat2wasm</a> tool and read through build log on the right to understand the structure even better! While reading that, I also transcribed instructions from the <a href="https://webassembly.github.io/spec/core/appendix/index-instructions.html">index of instructions</a>.
+        </p>
+        <img
+            alt="436 transcribed wasm instructions, each commented."
+            src="/blob/assets/instructions_transcribed.png">
+        <a href="https://github.com/Bleb1k/wasm-backend-thing/blob/main/instructions.js">Take a look at this!</a>
+        <p>With preparations done, I already wanted to dive into module generation! First version of API came out very low level, with by-hand code assembly approach, and seeing my first wasm module compiled, it felt like magic! It gave me new ideas about how I can improve this API, and all I was looking for is the inspiration on how second version should look like to not feel like jank or forced.
+        </p>
+        <p>There is how first generation of my API looks like:</p>
+        <pre><code class="language-javascript"
+>app.newFunction([[Type.i64], [Type.i64]], [[Type.i64, 1]], [
+  [instr.i64_const, 0],        // push i64{0} to stack
+  [instr.local_set, 1],        // store 0 in local variable (acc
+
+  [instr.block, Type.result],  // start of block
+    [instr.loop, Type.result], // start of loop
+      [instr.local_get, 0],    
+      instr.i64_eqz,
+      [instr.br_if, 1],        // if param == 0 jump to block (end)
+      [instr.local_get, 0],
+      [instr.local_get, 1],
+      instr.i64_mul,
+      [instr.local_set, 1],    // acc *= param
+      [instr.local_get, 0],
+      [instr.i64_const, 1],
+      instr.i64_sub,
+      [instr.local_set, 0],    // param -= 1
+      [instr.br, 0],           // jump to loop (start)
+    instr.end,
+  instr.end,
+
+  [instr.local_get, 1],        // push acc to stack, autoreturns
+], { export: "factorial" });
+
+const { instance, module } = await app.compile();
+
+console.log(instance.exports.factorial(16)) // 20922789888000
+</code></pre>
+
+        <h2>Exploration</h2>
+        <p>As I made the progress, I wanted to make this api look and feel better, so first thing I thought about is making some of the instructions into their own functions, here's how that would look like:
+        </p>
+        <pre><code class="language-javascript"
+>const add_100 = app.newFunction(
+  [[Type.i32], [Type.i32]], // params, rets
+  [],                       // local vars
+  [
+    instr.i32(50),
+    instr.local_get(0)
+      .i32_add(50)
+      .i32_add(),           // pops from stack
+  ],
+  { export: "true" }
+)</code></pre>
+        <p>Not a lot of changes from original raw design, but already a lot better! It felt a bit awkward with types still, lack of named variables was pretty big issue, and explicitness in operations made it only slightly better than previous version.
+        <br>Experimentation with named variables led me to this:
+        </p>
+        <pre><code class="language-javascript"
+>const add_100 = app.newFunction(
+  [[Type.i32], [Type.i32]],
+  [
+    instr.local_i32("acc"),
+    instr.local_set("acc", instr.i32(50)),
+    instr.local_get(0)
+      .i32_add(50)
+      .i32_add(instr.local_get("acc")),
+  ],
+  { export: "true" }
+)</code></pre>
+        <p>But that required not just assembly of instructions, but more complex processing, and having local_get process named and indexed variables, would just make everything messier than it should be.
+        </p>
+
+        <h2>Revelation</h2>
+        <p>When I was talking with my friend about compilation and optimizations, she mentioned Z3 tool, and when I looked into it, I was blown away! Not by what it offered, that flew right above my head, but the API presented in JS bindings was astonishingly good! <a href="https://microsoft.github.io/z3guide/programming/Z3%20JavaScript%20Examples#find-unequal-arrays-with-the-same-sum">Just take a look!</a>
+        </p>
+        <pre><code class="language-javascript"
+>const { Array, BitVec } = Z3;
+const mod = 1n << 32n;
+const arr1 = Array.const('arr', BitVec.sort(2), BitVec.sort(32));
+const arr2 = Array.const('arr2', BitVec.sort(2), BitVec.sort(32));
+const same_sum = arr1.select(0)
+    .add(arr1.select(1))
+    .add(arr1.select(2))
+    .add(arr1.select(3))
+    .eq(
+      arr2.select(0)
+        .add(arr2.select(1))
+        .add(arr2.select(2))
+        .add(arr2.select(3))
+    );
+const different = arr1.select(0).neq(arr2.select(0))
+    .or(arr1.select(1).neq(arr2.select(1)))
+    .or(arr1.select(2).neq(arr2.select(2)))
+    .or(arr1.select(3).neq(arr2.select(3)));
+    
+const model = await Z3.solve(same_sum.and(different)) as Model;
+const arr1Vals = [0, 1, 2, 3].map(i => model.eval(arr1.select(i)).value());
+const arr2Vals = [0, 1, 2, 3].map(i => model.eval(arr2.select(i)).value());
+
+var buffer = ""
+for (let i = 0; i &lt; 4; i++) {
+    buffer += arr1Vals[i];
+    buffer += " "
+}
+buffer += "\n";
+for (let i = 0; i &lt; 4; i++) {
+    buffer += arr2Vals[i];
+    buffer += " "
+}
+buffer += "\n";
+buffer
+</code></pre>
+        <p>After getting inspired by Z3 bindings, I started sketching my new API, starting with structure of code behind it. There, parts of OOP became very useful: I could define base Num or Int class with virtual functions, create base test for them, and extend this Int into I32, for example, and put I32 into the test, and it checks if functions are created or not.<br> So, basically, I figured out how <code class="language-javascript">W.&lt;Type>.&lt;func></code> would work.
+        </p>
+        <p> After laying out the ground work, it is time for the fun part, designing the API! After a few iterations and fixes I got to this result:
+        </p>
+        <pre><code class="language-javascript"
+>const factorial = app.function((n = W.I64.param("n")) => {
+  const acc = W.I64.local("acc").set(1)
+
+  W.block(() => W.loop(() => {
+    W.br_if(1, n._.eq(0))
+    
+    acc._ = acc._.mul(n._)
+    n._ = n._.sub(1)
+    W.br(0)
+  }))
+
+  return acc._
+}).export("factorial")
+
+// factorial(12) // Error: App is not compiled yet
+
+app.compile() // emits instance and module like before, but exports are processed now, so can be omitted
+
+console.log(app.binary) // for caching or distribution
+
+console.log(factorial(12)) // 479001600
+</code></pre>
+        <p>It looks nice, doesn't it? You may say that '_' everywhere is a bit overused or that it looks nothing like Z3 bindings! But look closer, n is a parameter, acc too, and '_' is simply well hidden local_get and local_set instructions! Which are alike setting and getting value behind a pointer in a low-level language! When you "get" local variable, it returns stack value that you manipulate further! And all of that is checked and optimized? Yes please! (WIP though, but it shouldn't be too hard with architecture I've got!)
+        </p>
+
+        <h2>Usefulness</h2>
+        <p>I started this because I wanted to experiment with wasm in my free time, and at some point I thought: where can I use this if I could? The compilation and assembly bring costs of their own... After thinking about it, I pointed out certain areas of interest:
+        </p>
+        <ul>
+        <li>Complex math: Performing math in js can be pretty slow, but you can use WASM to perform heavy calculations!</li>
+        <li>Vector calc: Ever wanted to take advantage of SIMD speed? Or just like using vectors? WASM has you covered!</li>
+        <li>Graphics: If you don't want to create shaders, but need faster imageData processing, this API can be used!</li>
+        <li>Games: Taking all of the above together, and you can utilize speed of wasm to create games, and keep everything in familiar javascript environment!</li>
+        <li>Servers: Functions can be compiled on servers and transferred to the user alongside a runtime, this can be useful for game servers or single-page applications.</li>
+        </ul>
+        <p>The list is not small, but I'm sure there's more applications I can't remember right now.<br>
+        But this API can have it's own share of disadvantages! You wouldn't want to share whole compiler to your users right? Here's list of places I would not expect to see this API at:
+        </p>
+        <ul>
+        <li>Simple web pages: because why? You don't need wasm to create animations, you have css for that!</li>
+        <li>Generated pages: They should include results of the compilation – wasm binaries!</li>
+        <li>Basically anything that would be transferred to the end user!</li>
+        </ul>
+
+        <h2>What's next?</h2>
+        <p>I still have a lot of work to do on this api, second generation is not functional yet, and first generation is functional only partly, some sections are still "TODO", including name section.
+        </p>
+        <p>In my plans for future:</p>
+        <ul>
+        <li>Fully finish first generation.</li>
+        <li>Make second generation compile at least empty program.</li>
+        <li>Implement integer and float support for second generation.</li>
+        <li>Plan out custom structures support.</li>
+        <li>Fully finish second generation with custom structures.</li>
+        <li>It's own language embeddable in html using &ltscript>!</li>
+        </ul>
+
+        <h2>Final thoughts</h2>
+        <p>I enjoy working with low-level systems, and working with wasm was nothing but fun, and looking forward I have a lot of improvements to figure out, and a lot to learn about! If you want to take a look at the API, you can find it <a href="https://github.com/Bleb1k/wasm-backend-thing">here</a>!
+        </p>
+        <p>I hope you liked this blog post and if you have anything to add or correct, please create an issue on GitHub!<br>
+        Thank you for reading dear visitor! Have a good day! ❤️
+        </p>
+    </section>
+    
+    <tmpl src="footer.html"></tmpl>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/blob/styles.css">
+    <script type="module" src="/blob/templates.js"></script>
+
+    <title>~/blog</title>
+</head>
+<body>
+    <tmpl src="header.html"></tmpl>
+
+    <section>
+        <h1>~/blog</h1>
+
+        <tmpl src="blog_post.html"
+            $title="<a href='posts/wasm_api.html'>
+                WASM JavaScript API
+            </a>"
+            $date="2025-04-24"
+            $content="Implementing experimental API to create wasm functions from within JavaScript."
+        ></tmpl>
+
+        <tmpl src="blog_post.html"
+            $title="<a href='posts/qr-zig.html'>
+                QR Code Generator in Zig
+            </a>"
+            $date="TBD"
+            $content="Implementing a QR code generator with error correction in Zig."
+        ></tmpl>
+    </section>
+
+    <tmpl src="footer.html"></tmpl>
+</body>
+</html>

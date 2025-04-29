@@ -1,0 +1,194 @@
+/* Root Variables */
+:root {
+    /* Light Theme (Coffee-Inspired) */
+    --bg-light: #f4e9d8; /* Creamy beige */
+    --fg-light: #5a4b43; /* Dark coffee brown */
+    --accent-light: #b78159; /* Warm caramel */
+    --code-bg-light: #e0d2c4; /* Lighter coffee tone */
+
+    /* Dark Theme (Catppuccin Mocha) */
+    --bg-dark: #1e1e2e; /* Deep indigo */
+    --fg-dark: #cdd6f4; /* Soft lavender */
+    --accent-dark: #a6d189; /* Mint green */
+    --code-bg-dark: #45475a; /* Dark slate */
+
+    /* Responsive Design */
+    --max-width: 800px;
+    --padding: 1rem;
+}
+
+/* Apply Themes Based on System Preference */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: var(--bg-dark);
+        --fg: var(--fg-dark);
+        --accent: var(--accent-dark);
+        --code-bg: var(--code-bg-dark);
+    }
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --bg: var(--bg-light);
+        --fg: var(--fg-light);
+        --accent: var(--accent-light);
+        --code-bg: var(--code-bg-light);
+    }
+}
+
+/* Global Styles */
+body {
+    font-family: 'Courier New', monospace;
+    line-height: 1.6;
+    margin: 0 auto;
+    max-width: var(--max-width);
+    padding: 0 var(--padding);
+    background: var(--bg);
+    color: var(--fg);
+}
+
+a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+blockquote {
+    margin: 1rem 0;
+    padding: 1rem;
+    border-left: 4px solid var(--accent);
+    background: var(--code-bg);
+    opacity: 0.8;
+}
+
+h1 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+h2 {
+    color: var(--accent);
+    margin-top: 2rem;
+}
+
+section img {
+    max-width: 700px;
+}
+
+img + a {
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+}
+
+/* Navigation Bar */
+nav {
+    margin-bottom: 2rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px dashed var(--accent);
+}
+
+nav a {
+    margin-right: 1rem;
+    font-weight: bold;
+}
+
+/* Gallery/Grid Layout */
+.gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+.gallery img {
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.project-card {
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.project-card:hover {
+    transform: translateY(-4px);
+}
+
+.project-info {
+    padding: 1rem;
+    background: var(--code-bg);
+}
+
+.project-info h3 {
+    margin: 0 0 0.5rem;
+    color: var(--accent);
+}
+
+.project-info p {
+    margin: 0;
+    opacity: 0.8;
+}
+
+/* Blog Posts */
+.post {
+    margin: 2rem 0;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--fg);
+}
+
+.post img {
+    max-width: 100%;
+    margin: 1rem 0;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.post small {
+    display: block;
+    margin-bottom: 0.5rem;
+    opacity: 0.8;
+}
+
+/* Code Blocks */
+pre {
+    background: var(--code-bg);
+    padding: 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+code {
+    font-family: 'Courier New', monospace;
+    background: var(--code-bg);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+}
+
+/* Footer */
+footer {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    font-size: 0.8rem;
+    opacity: 0.7;
+    text-align: center;
+}
+
+footer a {
+    color: var(--accent);
+}
+
+/* prism.js patches */
+
+.language-javascript {
+    padding-left: 0;
+}
