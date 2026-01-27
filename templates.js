@@ -20,7 +20,7 @@ for (const template of templates) {
     
 
     try {
-        const response = await fetch(`/blob/templates/${src}`);
+        const response = await fetch(`/templates/${src}`);
         if (!response.ok) throw new Error(`Failed to load ${src}`);
         let templateContent = await response.text();
 
