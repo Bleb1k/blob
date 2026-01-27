@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/blob/styles.css">
+    <link rel="stylesheet" href="/styles.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
-    <script type="module" src="/blob/templates.js"></script>
+    <script type="module" src="/templates.js"></script>
 
     <title>~/home</title>
     <meta name="description" content="Explore the creation of a JavaScript API for WebAssembly (WASM), designed to bring native performance to JS applications. Learn about the challenges, solutions, and future plans for this experimental project.">
@@ -36,14 +36,14 @@
         </p>
         <img
             alt="Web assembly module structure: section arrangement"
-            src="/blob/assets/web_assmebly_sections.png">
+            src="/assets/web_assmebly_sections.png">
         <a href="https://webassembly.github.io/spec/core/binary/modules.html#binary-module">Section arrangement of wasm binary.</a>
         <p>And I played around with <a href="https://webassembly.github.io/wabt/demo/wat2wasm/">wat2wasm</a> tool and read through build log on the right to understand the structure even better! While reading that, I also transcribed instructions from the <a href="https://webassembly.github.io/spec/core/appendix/index-instructions.html">index of instructions</a>.
         </p>
         <img
             alt="436 transcribed wasm instructions, each commented."
-            src="/blob/assets/instructions_transcribed.png">
-        <a href="https://github.com/Bleb1k/wasm-backend-thing/blob/main/instructions.js">Take a look at this!</a>
+            src="/assets/instructions_transcribed.png">
+        <a href="https://github.com/Bleb1k/wasm-backend-thing/main/instructions.js">Take a look at this!</a>
         <p>With preparations done, I already wanted to dive into module generation! First version of API came out very low level, with by-hand code assembly approach, and seeing my first wasm module compiled, it felt like magic! It gave me new ideas about how I can improve this API, and all I was looking for is the inspiration on how second version should look like to not feel like jank or forced.
         </p>
         <p>There is how first generation of my API looks like:</p>
